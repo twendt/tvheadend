@@ -525,6 +525,9 @@ skip:
     wcmd->wpos += r;
     if (wcmd->wpos >= wcmd->wsize) {
       res = HTTP_CON_SENT;
+      if (hc->hc_cmd == 8 || hc->hc_cmd == 5) {
+        http_client_cmd_destroy(hc, wcmd);
+      }
       wcmd = NULL;
     }
     break;
@@ -915,8 +918,13 @@ retry:
   if (r < 0) {
     if (errno == EIO && hc->hc_in_data && !hc->hc_keepalive)
       return http_client_finish(hc);
-    if (ERRNO_AGAIN(errno))
-      return HTTP_CON_RECEIVING;
+    if (ERRNO_AGAIN(errno)) {
+      if (hc->hc_cmd == 8 || hc->hc_cmd == 5) {
+        return HTTP_CON_DONE;
+      } else {
+        return HTTP_CON_RECEIVING;
+      }
+    }
     return http_client_flush(hc, -errno);
   }
   if (r > 0 && tvhtrace_enabled()) {

@@ -81,7 +81,9 @@ rtsp_options_decode( http_client_t *hc )
 
   p = http_arg_get(&hc->hc_args, "Public");
   if (p == NULL)
-    return -EIO;
+    tvhtrace("rtsp", "rtsp_options_decode: Returning EIO");
+    //return -EIO;
+    return HTTP_CON_OK;
   n = http_tokenize(p, argv, 32, ',');
   for (i = 1; i < n; i++) {
     if (strcmp(argv[i], "DESCRIBE") == 0)
